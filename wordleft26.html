@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vidar Ljung | Fordons-Wordle &amp; Truck Wordle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #f7f6f0;
+      --bg-card: #ffffff;
+      --brand-forest: #0b3b1e;
+      --brand-forest-hover: #14532d;
+      --color-correct: #2d6a4f;
+      --color-present: #d4a328;
+      --color-absent: #5c635e;
+      --border-subtle: #d6d4c8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-cream);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(11, 59, 30, 0.05) 0%, transparent 60%),
+        linear-gradient(rgba(11, 59, 30, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11, 59, 30, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+      color: var(--brand-forest);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    .font-industrial {
+      font-family: 'Chakra Petch', sans-serif;
+    }
+
+    /* Tile Animations */
+    .tile {
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.2s ease, color 0.2s ease;
+      transform-style: preserve-3d;
+    }
+
+    .tile.pop {
+      animation: popIn 0.14s ease-out forwards;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.88); }
+      60% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .tile.flip {
+      animation: flipTile 0.55s ease forwards;
+    }
+
+    @keyframes flipTile {
+      0% { transform: rotateX(0deg); }
+      49% { transform: rotateX(90deg); }
+      51% { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
+    }
+
+    .row.shake {
+      animation: shakeRow 0.45s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shakeRow {
+      10%, 90% { transform: translateX(-3px); }
+      20%, 80% { transform: translateX(5px); }
+      30%, 50%, 70% { transform: translateX(-7px); }
+      40%, 60% { transform: translateX(7px); }
+    }
+
+    /* State Classes matched to Vidar Ljung palette */
+    .tile-filled {
+      border-color: #0b3b1e !important;
+      background-color: #ffffff !important;
+      color: #0b3b1e !important;
+      box-shadow: 0 2px 6px rgba(11, 59, 30, 0.08);
+    }
+
+    .tile-correct, .key-correct {
+      background-color: #2d6a4f !important;
+      border-color: #2d6a4f !important;
+      color: #ffffff !important;
+    }
+
+    .tile-present, .key-present {
+      background-color: #d4a328 !important;
+      border-color: #d4a328 !important;
+      color: #ffffff !important;
+    }
+
+    .tile-absent, .key-absent {
+      background-color: #5c635e !important;
+      border-color: #5c635e !important;
+      color: #f7f6f0 !important;
+      opacity: 0.92;
+    }
+
+    /* Keyboard Buttons */
+    .key-btn {
+      transition: transform 0.08s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 3px 0 #062211;
+      touch-action: manipulation;
+    }
+    .key-btn:active, .key-btn.key-pressed {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #062211;
+      filter: brightness(1.18);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f7f6f0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #0b3b1e;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-[#0b3b1e] selection:text-[#f7f6f0]">
+
+  <!-- Top Navigation & Vidar Ljung School Header -->
+  <header class="w-full border-b-2 border-[#0b3b1e]/15 bg-[#f7f6f0]/95 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand: Vidar Ljung Custom Vector Logo + Fordons-Wordle Title -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        <!-- Vidar Ljung Official-Style Logo -->
+        <div class="flex items-center gap-2 sm:gap-2.5 pr-3 sm:pr-4 border-r-2 border-[#0b3b1e]/20">
+          <!-- Heather Sprig (Ljungkvist) SVG -->
+          <svg class="w-7 h-12 sm:w-8 sm:h-14 text-[#0b3b1e] shrink-0" viewBox="0 0 44 76" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Main Stem -->
+            <path d="M22 71V18" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+            <!-- Top Left Leaf -->
+            <path d="M22 25C16 18 10 10 12 6C14 2 21 8 22 19" stroke="currentColor" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Middle Right Leaf -->
+            <path d="M22 36C28 29 35 22 38 25C41 28 33 38 22 43" stroke="currentColor" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Lower Left Leaf -->
+            <path d="M22 46C14 38 6 31 4 35C2 39 11 48 22 53" stroke="currentColor" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <!-- Stacked Wordmark & Byline -->
+          <div class="flex flex-col justify-center">
+            <div class="font-extrabold text-[#0b3b1e] tracking-tight leading-[0.92] text-lg sm:text-2xl">
+              VIDAR<br/>LJUNG
+            </div>
+            <div class="text-[7px] sm:text-[8.5px] font-semibold tracking-[0.11em] text-[#0b3b1e] uppercase leading-[1.2] mt-1">
+              DEN LILLA SKOLAN MED<br/>DET STORA HJÄRTAT
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Title & Truck Badge -->
+        <div class="flex items-center gap-2.5">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="app-title" class="font-industrial text-base sm:text-xl font-bold tracking-wider text-[#0b3b1e] uppercase leading-none">
+                TRUCK &amp; AUTO WORDLE
+              </h1>
+              <!-- Truck Silhouette Icon -->
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-[#0b3b1e] shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18 18.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-11 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM3 6a2 2 0 0 0-2 2v8a1 1 0 0 0 1 1h1.17a3 3 0 0 1 5.66 0h4.34a3 3 0 0 1 5.66 0H21a1 1 0 0 0 1-1v-4.59a2 2 0 0 0-.59-1.41l-2.41-2.41A2 2 0 0 0 17.59 7H15V6a1 1 0 0 0-1-1H3Zm12 3h2.59L19.5 11H15V9Z"/>
+              </svg>
+            </div>
+            <p id="app-subtitle" class="text-[11px] sm:text-xs text-[#2d6a4f] font-semibold tracking-wide mt-1">
+              Fordonsprogrammet • 5-Letter Puzzle
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Language Toggle, Hint, Help -->
+      <div class="flex items-center gap-2 ml-auto sm:ml-0">
+        <!-- Language Switcher -->
+        <div class="flex items-center bg-[#0b3b1e] p-1 rounded-xl shadow-sm" role="group" aria-label="Language switch">
+          <button id="lang-en" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-[#f7f6f0] text-[#0b3b1e] shadow">
+            EN
+          </button>
+          <button id="lang-sv" onclick="setLanguage('sv')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-[#f7f6f0]/80 hover:text-white">
+            SV
+          </button>
+        </div>
+
+        <!-- Hint Button -->
+        <button id="btn-hint" onclick="toggleHint()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-[#0b3b1e]/5 border-2 border-[#0b3b1e] text-[#0b3b1e] text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm" title="Show Vehicle Clue">
+          <svg class="w-4 h-4 text-[#d4a328]" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+          </svg>
+          <span id="hint-btn-text">Hint</span>
+        </button>
+
+        <!-- Help Modal Button -->
+        <button id="btn-help" onclick="openHelpModal()" class="px-2.5 py-1.5 rounded-xl bg-[#0b3b1e] hover:bg-[#14532d] border-2 border-[#0b3b1e] text-[#f7f6f0] text-xs font-bold flex items-center gap-1 transition active:scale-95 shadow-sm" aria-label="How to play">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+          </svg>
+          <span id="help-btn-label" class="hidden sm:inline">Help</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-between gap-2.5 sm:gap-3">
+    
+    <!-- Top Status & Score Strip -->
+    <div class="w-full flex items-center justify-between bg-white border-2 border-[#0b3b1e]/20 rounded-2xl px-4 py-2 shadow-sm">
+      <div class="flex items-center gap-4 text-xs sm:text-sm">
+        <div>
+          <span id="label-solved" class="text-[#5c635e] font-medium">Solved:</span>
+          <span id="stat-wins" class="font-extrabold text-[#2d6a4f] ml-1">0</span>
+        </div>
+        <div class="h-4 w-px bg-[#0b3b1e]/20"></div>
+        <div>
+          <span id="label-streak" class="text-[#5c635e] font-medium">Streak:</span>
+          <span id="stat-streak" class="font-extrabold text-[#d4a328] ml-1">0</span>
+        </div>
+      </div>
+
+      <button id="btn-new-word" onclick="startNewGame()" class="px-3.5 py-1.5 rounded-xl bg-[#0b3b1e] hover:bg-[#14532d] text-[#f7f6f0] font-bold text-xs sm:text-sm shadow-sm transition active:scale-95 flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+        <span id="new-word-text">New Word</span>
+      </button>
+    </div>
+
+    <!-- Optional Mechanic Hint Banner -->
+    <div id="hint-banner" class="hidden w-full bg-[#d4a328]/15 border-2 border-[#d4a328] rounded-2xl px-4 py-2.5 text-xs sm:text-sm text-[#0b3b1e] flex items-start gap-2.5 shadow-sm">
+      <span class="px-2 py-0.5 rounded-md bg-[#d4a328] text-white font-bold text-[11px] uppercase tracking-wider shrink-0 mt-0.5" id="hint-badge">CLUE</span>
+      <p id="hint-text" class="leading-relaxed font-medium"></p>
+    </div>
+
+    <!-- Student's Requested Live Diagnostic Feedback Console -->
+    <div id="feedback-box" class="w-full bg-white border-2 border-[#0b3b1e] rounded-2xl px-4 py-2.5 sm:py-3 shadow-sm transition-all">
+      <div class="flex items-center justify-between mb-1">
+        <span id="console-header" class="text-[11px] font-bold uppercase tracking-wider text-[#2d6a4f] flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#2d6a4f] animate-pulse"></span>
+          <span>Diagnostic Terminal</span>
+        </span>
+        <span id="attempt-counter" class="text-[11px] font-mono font-semibold text-[#5c635e]">Attempt 1 / 6</span>
+      </div>
+      <p id="feedback-message" class="text-xs sm:text-sm text-[#0b3b1e] font-semibold leading-snug">
+        Type a 5-letter vehicle or truck word and press ENTER.
+      </p>
+      <!-- Explicit non-matching letter readout requested by student -->
+      <div id="absent-report" class="hidden mt-2 pt-2 border-t border-[#0b3b1e]/15 text-xs text-rose-700 font-mono font-semibold"></div>
+    </div>
+
+    <!-- 6x5 Wordle Board Grid -->
+    <div id="board-container" class="flex items-center justify-center my-auto py-1">
+      <div id="game-board" class="grid grid-rows-6 gap-1.5 sm:gap-2">
+        <!-- Rows and tiles generated dynamically via JS -->
+      </div>
+    </div>
+
+    <!-- On-Screen Workshop Keyboard -->
+    <div class="w-full max-w-xl flex flex-col items-center gap-1.5 pt-1 pb-2">
+      <div class="flex items-center gap-1.5 text-[11px] text-[#5c635e] font-medium">
+        <svg class="w-3.5 h-3.5 text-[#0b3b1e]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+        </svg>
+        <span id="keyboard-hint-text">Type using your physical keyboard or tap the keys below</span>
+      </div>
+      <div id="keyboard-container" class="w-full flex flex-col gap-1.5 sm:gap-2">
+        <!-- Keyboard rows generated dynamically via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Result / Educational Summary Modal -->
+  <div id="result-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0b3b1e]/60 backdrop-blur-sm p-4">
+    <div class="bg-[#f7f6f0] border-2 border-[#0b3b1e] rounded-3xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <span id="result-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#2d6a4f]/15 text-[#2d6a4f] border border-[#2d6a4f]/30">
+          SOLVED!
+        </span>
+        <button onclick="closeResultModal()" class="text-[#5c635e] hover:text-[#0b3b1e] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <h2 id="result-title" class="font-industrial text-2xl font-bold text-[#0b3b1e] mb-1">Great job, Mechanic!</h2>
+      <p id="result-subtitle" class="text-sm text-[#5c635e] font-medium mb-4">You identified the vehicle component.</p>
+
+      <!-- Target Word Reveal Card -->
+      <div class="bg-white border-2 border-[#0b3b1e]/20 rounded-2xl p-4 mb-5 shadow-sm">
+        <div class="text-xs uppercase tracking-wider text-[#5c635e] font-semibold mb-1" id="result-word-label">Target Term</div>
+        <div id="result-word" class="font-industrial text-3xl font-bold tracking-[0.2em] text-[#2d6a4f] mb-2">TRUCK</div>
+        <p id="result-definition" class="text-xs sm:text-sm text-[#0b3b1e] leading-relaxed border-t border-[#0b3b1e]/15 pt-2.5">
+          A heavy motor vehicle designed to transport cargo, freight, or specialized equipment.
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeResultModal()" id="btn-modal-close" class="flex-1 py-3 rounded-xl bg-white hover:bg-[#0b3b1e]/5 border-2 border-[#0b3b1e] text-[#0b3b1e] font-bold text-sm transition">
+          Inspect Board
+        </button>
+        <button onclick="startNewGame()" id="btn-modal-next" class="flex-1 py-3 rounded-xl bg-[#0b3b1e] hover:bg-[#14532d] text-[#f7f6f0] font-bold text-sm shadow-md transition">
+          Next Word →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How To Play Modal -->
+  <div id="help-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0b3b1e]/60 backdrop-blur-sm p-4">
+    <div class="bg-[#f7f6f0] border-2 border-[#0b3b1e] rounded-3xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="help-title" class="font-industrial text-xl font-bold text-[#0b3b1e] uppercase tracking-wide">How to Play</h2>
+        <button onclick="closeHelpModal()" class="text-[#5c635e] hover:text-[#0b3b1e] p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="help-content" class="space-y-3 text-xs sm:text-sm text-[#0b3b1e] leading-relaxed">
+        <!-- Populated dynamically according to active language -->
+      </div>
+
+      <button onclick="closeHelpModal()" id="btn-help-gotit" class="mt-6 w-full py-3 rounded-xl bg-[#0b3b1e] hover:bg-[#14532d] text-[#f7f6f0] font-bold text-sm transition shadow-md">
+        Start Wrenching
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Custom Vehicle & Truck Wordlists (Strictly 5 letters each)
+     * Includes mechanic definitions / clues for educational reinforcement.
+     */
+    const WORD_BANK = {
+      en: [
+        { word: "TRUCK", hint: "Heavy commercial vehicle used to transport cargo.", def: "Heavy-duty vehicles designed for freight and logistics, often equipped with air brakes and high-torque diesel engines." },
+        { word: "BRAKE", hint: "System used to slow down or stop a moving vehicle.", def: "Converts kinetic energy into heat through friction (disc/drum) or uses compressed air in heavy trucks." },
+        { word: "AXLES", hint: "Central shafts that connect and support the wheels.", def: "Drive axles transfer torque from the differential to the wheels, while steer axles handle directional control." },
+        { word: "WHEEL", hint: "Circular component that rotates on an axle bearing.", def: "Fitted with a pneumatic tire to provide traction, steering response, and load-carrying capacity." },
+        { word: "TURBO", hint: "Exhaust-driven turbine that forces extra air into the engine.", def: "A turbocharger increases engine efficiency and power output by compressing intake air." },
+        { word: "VALVE", hint: "Controls the flow of air/fuel into and exhaust out of cylinders.", def: "Timed by the camshaft to open and close precisely during the four-stroke combustion cycle." },
+        { word: "SHAFT", hint: "Rotating rod that transmits power, such as a drive or cam.", def: "Transfers mechanical torque from the transmission to the differential and axles." },
+        { word: "GEARS", hint: "Toothed wheels inside a transmission that change torque and speed.", def: "Allows the engine to operate within its optimal RPM range across different vehicle speeds." },
+        { word: "SPARK", hint: "Electrical ignition needed in gasoline engines.", def: "Created by the spark plug to ignite the compressed air-fuel mixture inside the cylinder." },
+        { word: "FLUID", hint: "Liquid essential for hydraulics, brakes, or cooling.", def: "Hydraulic and brake fluids transfer force under pressure, while coolant regulates engine temperature." },
+        { word: "CRANK", hint: "Short for crankshaft; converts piston motion into rotation.", def: "Translates the linear up-and-down movement of the pistons into rotational motion for the drivetrain." },
+        { word: "GAUGE", hint: "Dashboard instrument showing pressure, speed, or temperature.", def: "Monitors vital systems like air brake pressure, oil pressure, fuel level, and coolant temperature." },
+        { word: "CABIN", hint: "The enclosed compartment where the truck driver sits.", def: "Houses the steering wheel, instrument cluster, sleeper berth (in long-haul trucks), and control pedals." },
+        { word: "STEER", hint: "To control the direction in which a vehicle travels.", def: "Accomplished via the steering wheel, column, steering gear/rack, and tie rods connected to the front wheels." },
+        { word: "FRAME", hint: "Heavy steel ladder chassis supporting the truck body.", def: "The main structural backbone of a heavy truck that supports the engine, cab, suspension, and cargo load." },
+        { word: "WIPER", hint: "Rubber blade that clears rain and snow from the windshield.", def: "Driven by an electric motor and linkage system to ensure clear driver visibility in bad weather." },
+        { word: "BOLTS", hint: "Threaded fasteners used with nuts to secure heavy parts.", def: "High-tensile steel bolts are torqued to exact specifications on wheels, chassis, and engine components." },
+        { word: "PEDAL", hint: "Foot-operated lever for throttle, brake, or clutch.", def: "Translates the driver's foot input into mechanical, hydraulic, or electronic control signals." },
+        { word: "MOTOR", hint: "Machine that converts energy into mechanical motion.", def: "Refers either to an internal combustion engine or an electric traction motor in modern EV trucks." },
+        { word: "STRAP", hint: "Heavy-duty webbing used to secure cargo on a flatbed.", def: "Ratchet straps prevent load shifting during transport, which is critical for road safety." },
+        { word: "HITCH", hint: "Coupling device used to attach a trailer to a towing vehicle.", def: "Secures the trailer safely while allowing articulation when turning and navigating uneven roads." },
+        { word: "TIRES", hint: "Rubber coverings mounted on rims for grip and cushioning.", def: "Heavy truck tires have deep tread patterns and high ply ratings to handle heavy axle loads." },
+        { word: "ROTOR", hint: "Spinning metal disc clamped by brake pads to stop a wheel.", def: "In disc brake systems, brake calipers squeeze pads against the rotor to create stopping friction." }
+      ],
+      sv: [
+        { word: "MOTOR", hint: "Kraftkällan som driver fordonet framåt.", def: "Omvandlar bränsle eller elenergi till mekanisk rörelse och vridmoment." },
+        { word: "BROMS", hint: "System som sänker farten eller stannar fordonet.", def: "Tunga fordon använder oftast tryckluftsbromsar medan personbilar har hydrauliska skiv- eller trumbromsar." },
+        { word: "VÄXEL", hint: "Kugghjul i lådan som anpassar varvtal och vridmoment.", def: "Gör att motorn kan arbeta effektivt oavsett om fordonet startar tungt eller kör i landsvägsfart." },
+        { word: "TURBO", hint: "Avgasturbin som pressar in mer luft i motorn.", def: "Ökar fyllnadsgraden i cylindrarna vilket ger högre effekt och bättre verkningsgrad." },
+        { word: "DÄCKS", hint: "Gummiringar på fälgen som ger grepp mot vägbanan.", def: "Rätt lufttryck och mönsterdjup är avgörande för bromssträcka, bränsleförbrukning och trafiksäkerhet." },
+        { word: "KOLVS", hint: "Rör sig upp och ner inuti motorns cylinder.", def: "Överför förbränningstrycket via vevstaken ner till vevaxeln." },
+        { word: "FJÄDR", hint: "Komponent som tar upp ojämnheter i vägbanan.", def: "Bladfjädrar, spiralfjädrar eller luftbälgar ger komfort och håller däcken mot marken." },
+        { word: "RAMEN", hint: "Den bärande stålkonstruktionen på en lastbil.", def: "Lastbilens ryggrad som bär upp hytt, motor, axlar och påbyggnad." },
+        { word: "SLÄPS", hint: "Fordon som kopplas bakom en lastbil eller dragbil.", def: "Ökar lastkapaciteten och kopplas via dragstång eller vändskiva (semitrailer)." },
+        { word: "OLJOR", hint: "Smörjmedel som minskar friktion och slitage i motorn.", def: "Motorolja, växellådsolja och hydraulolja kyler, smörjer och skyddar rörliga delar." },
+        { word: "FÄLGS", hint: "Metallhjulet som däcket monteras på.", def: "Måste dras med rätt åtdragningsmoment med hjulmuttrar eller hjulbultar." },
+        { word: "KYLAR", hint: "Värmeväxlare i fronten som sänker motorns temperatur.", def: "Kylvätskan cirkulerar genom motorn och kyls ner av fartvinden och kylfläkten." },
+        { word: "AVGÅS", hint: "Gaser som leds ut från motorn efter förbränning.", def: "Renas genom katalysator, partikelfilter (DPF) och SCR-system (AdBlue) innan de lämnar avgasröret." },
+        { word: "VENTI", hint: "Öppnar och stänger för insug och avgaser i toppen.", def: "Styrs av kamaxeln och måste täta helt mot ventilsätet under kompression och förbränning." },
+        { word: "AXELN", hint: "Bärande stång mellan hjulen som överför drivkraft.", def: "Drivaxeln överför kraft från differentialen till drivhjulen på fordonet." },
+        { word: "HYTTS", hint: "Utrymmet där lastbilsföraren sitter och kör.", def: "Utrustad med förarstol, instrumentpanel, reglage och ofta sovutrymme på fjärrlastbilar." },
+        { word: "SPÅRS", hint: "Hjulinställning som påverkar hur hjulen rullar rakt.", def: "Felaktig hjulinställning (toe-in/toe-out) orsakar snedslitna däck och sämre väghållning." },
+        { word: "DRIVS", hint: "Kraftöverföringen från motor ut till hjulen.", def: "Drivlinan består av motor, koppling, växellåda, kardanaxel, differential och drivaxlar." },
+        { word: "TÄNDS", hint: "Gnistan eller värmen som startar förbränningen.", def: "Bensinmotorer använder tändstift medan dieselmotorer antänder bränslet genom hög kompression." },
+        { word: "SÄKRA", hint: "Skyddar elsystemet mot överbelastning och kortslutning.", def: "Säkringar bränner av om strömmen blir för hög och förhindrar kabelbrand i fordonet." }
+      ]
+    };
+
+    /**
+     * UI Translations
+     */
+    const UI_TEXT = {
+      en: {
+        title: "TRUCK & AUTO WORDLE",
+        subtitle: "Vehicle Tech Edition • 5-Letter Puzzle",
+        hintBtn: "Hint",
+        helpBtn: "Help",
+        solved: "Solved:",
+        streak: "Streak:",
+        newWord: "New Word",
+        clueBadge: "CLUE",
+        consoleHeader: "Diagnostic Terminal",
+        keyboardHint: "Type using your physical keyboard or tap the keys below",
+        attempt: (curr, max) => `Attempt ${curr} / ${max}`,
+        initialPrompt: "Type a 5-letter vehicle or truck word and press ENTER.",
+        notEnoughLetters: "Not enough letters — enter a 5-letter word.",
+        notInWordSingle: (letter) => `The letter "${letter}" you entered is not in the word.`,
+        notInWordMultiple: (letters) => `The letters [${letters.join(", ")}] you entered are not in the word.`,
+        allLettersInWord: "Great guess! Every letter you entered is in the word!",
+        partialMatchSummary: (greenCount, yellowCount) =>
+          `Match scan: ${greenCount} green (right place), ${yellowCount} yellow (in word, wrong place).`,
+        winBadge: "PUZZLE SOLVED!",
+        winTitle: "Great job, Mechanic!",
+        winSubtitle: (tries) => `You cracked the vehicle term in ${tries} ${tries === 1 ? "attempt" : "attempts"}.`,
+        loseBadge: "OUT OF ATTEMPTS",
+        loseTitle: "Better luck next shift!",
+        loseSubtitle: "Here is the vehicle term you were looking for:",
+        targetLabel: "Vehicle / Truck Term",
+        inspectBoard: "Inspect Board",
+        nextWord: "Next Word →",
+        helpTitle: "How to Play",
+        helpGotIt: "Start Wrenching",
+        helpHtml: `
+          <p>Guess the hidden <strong>5-letter vehicle or truck word</strong> in 6 tries.</p>
+          <div class="space-y-2 bg-white p-3.5 rounded-2xl border-2 border-[#0b3b1e]/20">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#2d6a4f] flex items-center justify-center font-bold text-white shrink-0">T</span>
+              <span><strong>Forest Green:</strong> The letter is in the word and in the <strong>right place</strong>.</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#d4a328] flex items-center justify-center font-bold text-white shrink-0">R</span>
+              <span><strong>Warm Mustard:</strong> The letter is in the word, but in the <strong>wrong place</strong>.</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#5c635e] flex items-center justify-center font-bold text-white shrink-0">K</span>
+              <span><strong>Slate Gray:</strong> The letter you entered is <strong>not in the word</strong>.</span>
+            </div>
+          </div>
+          <p class="text-xs text-[#5c635e] font-medium">Tip: Click <strong>Hint</strong> at the top if you need a workshop clue about the vehicle part!</p>
+        `
+      },
+      sv: {
+        title: "FORDONS-WORDLE",
+        subtitle: "Fordonsteknik • 5-bokstavspussel",
+        hintBtn: "Ledtråd",
+        helpBtn: "Hjälp",
+        solved: "Lösta:",
+        streak: "Svit:",
+        newWord: "Nytt ord",
+        clueBadge: "LEDTRÅD",
+        consoleHeader: "Diagnostikterminal",
+        keyboardHint: "Du kan också använda datorns tangentbord!",
+        attempt: (curr, max) => `Försök ${curr} / ${max}`,
+        initialPrompt: "Skriv ett 5-bokstavsord inom fordon/lastbil och tryck på ENTER.",
+        notEnoughLetters: "För få bokstäver — skriv ett ord med 5 bokstäver.",
+        notInWordSingle: (letter) => `Bokstaven "${letter}" som du matade in finns inte i ordet.`,
+        notInWordMultiple: (letters) => `Bokstäverna [${letters.join(", ")}] som du matade in finns inte i ordet.`,
+        allLettersInWord: "Snyggt! Alla bokstäver du matade in finns med i ordet!",
+        partialMatchSummary: (greenCount, yellowCount) =>
+          `Skanning: ${greenCount} gröna (rätt plats), ${yellowCount} gula (finns i ordet, fel plats).`,
+        winBadge: "LÖST!",
+        winTitle: "Snyggt jobbat, mekanikern!",
+        winSubtitle: (tries) => `Du listade ut fordonsordet på ${tries} försök.`,
+        loseBadge: "SLUT PÅ FÖRSÖK",
+        loseTitle: "Nya tag nästa arbetspass!",
+        loseSubtitle: "Här var fordonsordet du sökte:",
+        targetLabel: "Fordonsterm",
+        inspectBoard: "Granska spelplan",
+        nextWord: "Nästa ord →",
+        helpTitle: "Så spelar du",
+        helpGotIt: "Börja meka",
+        helpHtml: `
+          <p>Gissa det hemliga <strong>5-bokstavsordet inom fordon och lastbil</strong> på max 6 försök.</p>
+          <div class="space-y-2 bg-white p-3.5 rounded-2xl border-2 border-[#0b3b1e]/20">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#2d6a4f] flex items-center justify-center font-bold text-white shrink-0">M</span>
+              <span><strong>Skogsgrön:</strong> Bokstaven finns i ordet och står på <strong>rätt plats</strong>.</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#d4a328] flex items-center justify-center font-bold text-white shrink-0">O</span>
+              <span><strong>Senapsgul:</strong> Bokstaven finns i ordet, men på <strong>fel plats</strong>.</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#5c635e] flex items-center justify-center font-bold text-white shrink-0">X</span>
+              <span><strong>Skiffergrå:</strong> Bokstaven du matade in <strong>finns inte i ordet</strong>.</span>
+            </div>
+          </div>
+          <p class="text-xs text-[#5c635e] font-medium">Tips: Klicka på <strong>Ledtråd</strong> högst upp om du vill ha en verkstadsledtråd!</p>
+        `
+      }
+    };
+
+    const KEYBOARD_LAYOUTS = {
+      en: [
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+        ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACK"]
+      ],
+      sv: [
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Å"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ö", "Ä"],
+        ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACK"]
+      ]
+    };
+
+    // Game State
+    const ROWS = 6;
+    const COLS = 5;
+    let currentLang = "en";
+    let targetEntry = null;
+    let lastWords = { en: "", sv: "" };
+    let currentRow = 0;
+    let currentCol = 0;
+    let gridState = [];
+    let keyStatuses = {};
+    let isGameOver = false;
+    let isAnimating = false;
+    let hintVisible = false;
+
+    // Persistent Stats
+    let stats = {
+      wins: parseInt(localStorage.getItem("fordon_wordle_wins") || "0", 10),
+      streak: parseInt(localStorage.getItem("fordon_wordle_streak") || "0", 10)
+    };
+
+    // Initialize Game on Load
+    window.addEventListener("DOMContentLoaded", () => {
+      updateStatsUI();
+      setLanguage("en");
+      window.focus();
+    });
+
+    // Clear focus from clicked buttons so physical Enter/Space keys never accidentally re-trigger top bar buttons
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.closest("button")) {
+        e.target.closest("button").blur();
+      }
+    });
+
+    // Physical Keyboard Listener (handles A-Z, Å/Ä/Ö, Enter, Backspace, Delete)
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const resultModalOpen = !document.getElementById("result-modal").classList.contains("hidden");
+      const helpModalOpen = !document.getElementById("help-modal").classList.contains("hidden");
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeResultModal();
+        closeHelpModal();
+        return;
+      }
+
+      if (resultModalOpen) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          startNewGame();
+        }
+        return;
+      }
+
+      if (helpModalOpen) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          closeHelpModal();
+        }
+        return;
+      }
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        flashOnScreenKey("ENTER");
+        handleKeyInput("ENTER");
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        flashOnScreenKey("BACK");
+        handleKeyInput("BACK");
+      } else {
+        const upper = e.key.toUpperCase();
+        const validPattern = currentLang === "sv" ? /^[A-ZÅÄÖ]$/ : /^[A-Z]$/;
+        if (validPattern.test(upper)) {
+          e.preventDefault();
+          flashOnScreenKey(upper);
+          handleKeyInput(upper);
+        }
+      }
+    });
+
+    /**
+     * Briefly highlight the corresponding on-screen key when typing on a physical keyboard
+     */
+    function flashOnScreenKey(key) {
+      const btn = document.querySelector(`button[data-key="${key}"]`);
+      if (!btn) return;
+      btn.classList.add("key-pressed");
+      setTimeout(() => {
+        btn.classList.remove("key-pressed");
+      }, 130);
+    }
+
+    /**
+     * Switch between English and Swedish modes
+     */
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      // Update Toggle Buttons
+      const btnEn = document.getElementById("lang-en");
+      const btnSv = document.getElementById("lang-sv");
+      if (lang === "en") {
+        btnEn.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-[#f7f6f0] text-[#0b3b1e] shadow";
+        btnSv.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-[#f7f6f0]/80 hover:text-white";
+      } else {
+        btnSv.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-[#f7f6f0] text-[#0b3b1e] shadow";
+        btnEn.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-[#f7f6f0]/80 hover:text-white";
+      }
+
+      // Apply UI labels
+      const t = UI_TEXT[lang];
+      document.getElementById("app-title").textContent = t.title;
+      document.getElementById("app-subtitle").textContent = t.subtitle;
+      document.getElementById("hint-btn-text").textContent = t.hintBtn;
+      document.getElementById("help-btn-label").textContent = t.helpBtn;
+      document.getElementById("label-solved").textContent = t.solved;
+      document.getElementById("label-streak").textContent = t.streak;
+      document.getElementById("new-word-text").textContent = t.newWord;
+      document.getElementById("hint-badge").textContent = t.clueBadge;
+      document.getElementById("console-header").lastElementChild.textContent = t.consoleHeader;
+      document.getElementById("keyboard-hint-text").textContent = t.keyboardHint;
+      document.getElementById("help-title").textContent = t.helpTitle;
+      document.getElementById("help-content").innerHTML = t.helpHtml;
+      document.getElementById("btn-help-gotit").textContent = t.helpGotIt;
+      document.getElementById("btn-modal-close").textContent = t.inspectBoard;
+      document.getElementById("btn-modal-next").textContent = t.nextWord;
+      document.getElementById("result-word-label").textContent = t.targetLabel;
+
+      startNewGame();
+    }
+
+    /**
+     * Pick a random vehicle/truck word using Math.random() without immediate repetition
+     */
+    function pickRandomWord(lang) {
+      const list = WORD_BANK[lang];
+      if (list.length === 1) return list[0];
+      let chosen;
+      do {
+        const randomIndex = Math.floor(Math.random() * list.length);
+        chosen = list[randomIndex];
+      } while (chosen.word === lastWords[lang]);
+      lastWords[lang] = chosen.word;
+      return chosen;
+    }
+
+    /**
+     * Reset board, state, and pick a fresh word
+     */
+    function startNewGame() {
+      closeResultModal();
+      targetEntry = pickRandomWord(currentLang);
+      currentRow = 0;
+      currentCol = 0;
+      isGameOver = false;
+      isAnimating = false;
+      hintVisible = false;
+      keyStatuses = {};
+      gridState = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+
+      // Hide Hint Banner
+      const hintBanner = document.getElementById("hint-banner");
+      hintBanner.classList.add("hidden");
+      document.getElementById("hint-text").textContent = targetEntry.hint;
+
+      // Reset Feedback Terminal
+      const t = UI_TEXT[currentLang];
+      document.getElementById("attempt-counter").textContent = t.attempt(1, ROWS);
+      const feedbackMsg = document.getElementById("feedback-message");
+      feedbackMsg.textContent = t.initialPrompt;
+      feedbackMsg.className = "text-xs sm:text-sm text-[#0b3b1e] font-semibold leading-snug";
+
+      const absentReport = document.getElementById("absent-report");
+      absentReport.classList.add("hidden");
+      absentReport.textContent = "";
+
+      renderBoard();
+      renderKeyboard();
+    }
+
+    /**
+     * Build the 6x5 visual tile grid
+     */
+    function renderBoard() {
+      const board = document.getElementById("game-board");
+      board.innerHTML = "";
+
+      for (let r = 0; r < ROWS; r++) {
+        const rowEl = document.createElement("div");
+        rowEl.id = `row-${r}`;
+        rowEl.className = "row grid grid-cols-5 gap-1.5 sm:gap-2";
+
+        for (let c = 0; c < COLS; c++) {
+          const tile = document.createElement("div");
+          tile.id = `tile-${r}-${c}`;
+          tile.className =
+            "tile w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 border-[#0b3b1e]/40 bg-white flex items-center justify-center font-industrial text-2xl sm:text-3xl font-bold uppercase text-[#0b3b1e] shadow-sm";
+          rowEl.appendChild(tile);
+        }
+        board.appendChild(rowEl);
+      }
+    }
+
+    /**
+     * Build the interactive on-screen QWERTY keyboard
+     */
+    function renderKeyboard() {
+      const container = document.getElementById("keyboard-container");
+      container.innerHTML = "";
+      const rows = KEYBOARD_LAYOUTS[currentLang];
+
+      rows.forEach((rowKeys) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "flex justify-center gap-1 sm:gap-1.5 w-full";
+
+        rowKeys.forEach((key) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.dataset.key = key;
+          btn.onclick = () => handleKeyInput(key);
+
+          const isSpecial = key === "ENTER" || key === "BACK";
+          btn.className = `key-btn ${
+            isSpecial ? "px-2.5 sm:px-4 text-xs sm:text-sm font-bold" : "flex-1 max-w-[2.75rem] text-sm sm:text-base font-bold"
+          } h-11 sm:h-12 rounded-xl bg-[#0b3b1e] hover:bg-[#14532d] border border-[#0b3b1e] text-[#f7f6f0] flex items-center justify-center`;
+
+          if (key === "BACK") {
+            btn.innerHTML = `
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75 14.25 12m0 0 2.25 2.25M14.25 12l2.25-2.25M14.25 12 12 14.25m-2.58 4.92-6.374-6.375a1.125 1.125 0 0 1 0-1.59L9.42 4.83c.21-.211.497-.33.795-.33H19.5a2.25 2.25 0 0 1 2.25 2.25v10.5a2.25 2.25 0 0 1-2.25 2.25h-9.284c-.298 0-.585-.119-.795-.33Z" />
+              </svg>`;
+            btn.setAttribute("aria-label", "Backspace");
+          } else {
+            btn.textContent = key;
+          }
+
+          // Reapply status if already guessed
+          if (keyStatuses[key]) {
+            btn.classList.add(`key-${keyStatuses[key]}`);
+          }
+
+          rowDiv.appendChild(btn);
+        });
+
+        container.appendChild(rowDiv);
+      });
+    }
+
+    /**
+     * Handle letter, backspace, or enter inputs
+     */
+    function handleKeyInput(key) {
+      if (isGameOver || isAnimating) return;
+
+      if (key === "BACK") {
+        if (currentCol > 0) {
+          currentCol--;
+          gridState[currentRow][currentCol] = "";
+          const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
+          tile.textContent = "";
+          tile.classList.remove("tile-filled", "pop");
+        }
+        return;
+      }
+
+      if (key === "ENTER") {
+        submitGuess();
+        return;
+      }
+
+      if (currentCol < COLS) {
+        gridState[currentRow][currentCol] = key;
+        const tile = document.getElementById(`tile-${currentRow}-${currentCol}`);
+        tile.textContent = key;
+        tile.classList.add("tile-filled");
+        tile.classList.remove("pop");
+        void tile.offsetWidth; // trigger reflow for animation restart
+        tile.classList.add("pop");
+        currentCol++;
+      }
+    }
+
+    /**
+     * Evaluate the 5-letter guess against the target word
+     */
+    function submitGuess() {
+      const t = UI_TEXT[currentLang];
+
+      if (currentCol < COLS) {
+        const rowEl = document.getElementById(`row-${currentRow}`);
+        rowEl.classList.remove("shake");
+        void rowEl.offsetWidth;
+        rowEl.classList.add("shake");
+
+        const feedbackMsg = document.getElementById("feedback-message");
+        feedbackMsg.textContent = t.notEnoughLetters;
+        feedbackMsg.className = "text-xs sm:text-sm text-[#b45309] font-bold leading-snug";
+        return;
+      }
+
+      isAnimating = true;
+      const guess = gridState[currentRow].join("");
+      const target = targetEntry.word;
+
+      // Two-pass Wordle evaluation (handles duplicate letters accurately)
+      const resultStatuses = Array(COLS).fill("absent");
+      const targetChars = target.split("");
+      const guessChars = guess.split("");
+      const targetUsed = Array(COLS).fill(false);
+
+      // Pass 1: Exact matches (Green)
+      for (let i = 0; i < COLS; i++) {
+        if (guessChars[i] === targetChars[i]) {
+          resultStatuses[i] = "correct";
+          targetUsed[i] = true;
+        }
+      }
+
+      // Pass 2: Present elsewhere in word (Yellow)
+      for (let i = 0; i < COLS; i++) {
+        if (resultStatuses[i] === "correct") continue;
+        for (let j = 0; j < COLS; j++) {
+          if (!targetUsed[j] && guessChars[i] === targetChars[j]) {
+            resultStatuses[i] = "present";
+            targetUsed[j] = true;
+            break;
+          }
+        }
+      }
+
+      // Determine letters that are NOT in the target word at all (for the student's requested message)
+      const absentLettersUnique = [];
+      for (let i = 0; i < COLS; i++) {
+        const ch = guessChars[i];
+        if (!target.includes(ch) && !absentLettersUnique.includes(ch)) {
+          absentLettersUnique.push(ch);
+        }
+      }
+
+      const greenCount = resultStatuses.filter((s) => s === "correct").length;
+      const yellowCount = resultStatuses.filter((s) => s === "present").length;
+
+      // Animate tile flips sequentially
+      const rowToFlip = currentRow;
+      for (let i = 0; i < COLS; i++) {
+        const tile = document.getElementById(`tile-${rowToFlip}-${i}`);
+        setTimeout(() => {
+          tile.classList.add("flip");
+          setTimeout(() => {
+            tile.classList.remove("tile-filled");
+            tile.classList.add(`tile-${resultStatuses[i]}`);
+            updateKeyStatus(guessChars[i], resultStatuses[i]);
+          }, 250);
+        }, i * 160);
+      }
+
+      // After all 5 tiles finish flipping
+      setTimeout(() => {
+        isAnimating = false;
+        updateDiagnosticFeedback(greenCount, yellowCount, absentLettersUnique);
+
+        if (guess === target) {
+          isGameOver = true;
+          stats.wins += 1;
+          stats.streak += 1;
+          saveStats();
+          updateStatsUI();
+          showResultModal(true, rowToFlip + 1);
+          return;
+        }
+
+        currentRow++;
+        currentCol = 0;
+
+        if (currentRow >= ROWS) {
+          isGameOver = true;
+          stats.streak = 0;
+          saveStats();
+          updateStatsUI();
+          showResultModal(false, ROWS);
+        } else {
+          document.getElementById("attempt-counter").textContent = t.attempt(currentRow + 1, ROWS);
+        }
+      }, COLS * 160 + 320);
+    }
+
+    /**
+     * Update the Diagnostic Terminal with color counts AND the student's requested message
+     */
+    function updateDiagnosticFeedback(greenCount, yellowCount, absentLetters) {
+      const t = UI_TEXT[currentLang];
+      const feedbackMsg = document.getElementById("feedback-message");
+      const absentReport = document.getElementById("absent-report");
+
+      if (absentLetters.length === 0) {
+        feedbackMsg.textContent = t.allLettersInWord;
+        feedbackMsg.className = "text-xs sm:text-sm text-[#2d6a4f] font-bold leading-snug";
+        absentReport.classList.add("hidden");
+      } else {
+        feedbackMsg.textContent = t.partialMatchSummary(greenCount, yellowCount);
+        feedbackMsg.className = "text-xs sm:text-sm text-[#0b3b1e] font-semibold leading-snug";
+
+        absentReport.classList.remove("hidden");
+        if (absentLetters.length === 1) {
+          absentReport.textContent = `> ${t.notInWordSingle(absentLetters[0])}`;
+        } else {
+          absentReport.textContent = `> ${t.notInWordMultiple(absentLetters)}`;
+        }
+      }
+    }
+
+    /**
+     * Upgrade keyboard key color priority: correct > present > absent
+     */
+    function updateKeyStatus(letter, newStatus) {
+      const priority = { correct: 3, present: 2, absent: 1 };
+      const currentStatus = keyStatuses[letter];
+      if (!currentStatus || priority[newStatus] > priority[currentStatus]) {
+        keyStatuses[letter] = newStatus;
+        const keyBtn = document.querySelector(`button[data-key="${letter}"]`);
+        if (keyBtn) {
+          keyBtn.classList.remove("key-correct", "key-present", "key-absent");
+          keyBtn.classList.add(`key-${newStatus}`);
+        }
+      }
+    }
+
+    /**
+     * Toggle the optional vehicle clue banner
+     */
+    function toggleHint() {
+      hintVisible = !hintVisible;
+      const banner = document.getElementById("hint-banner");
+      if (hintVisible) {
+        banner.classList.remove("hidden");
+      } else {
+        banner.classList.add("hidden");
+      }
+    }
+
+    /**
+     * Show Win/Loss Summary Modal with Workshop Term Definition
+     */
+    function showResultModal(didWin, attemptsUsed) {
+      const t = UI_TEXT[currentLang];
+      const badge = document.getElementById("result-badge");
+      const title = document.getElementById("result-title");
+      const subtitle = document.getElementById("result-subtitle");
+
+      if (didWin) {
+        badge.textContent = t.winBadge;
+        badge.className =
+          "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#2d6a4f]/15 text-[#2d6a4f] border border-[#2d6a4f]/30";
+        title.textContent = t.winTitle;
+        subtitle.textContent = t.winSubtitle(attemptsUsed);
+      } else {
+        badge.textContent = t.loseBadge;
+        badge.className =
+          "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-600/15 text-rose-700 border border-rose-600/30";
+        title.textContent = t.loseTitle;
+        subtitle.textContent = t.loseSubtitle;
+      }
+
+      document.getElementById("result-word").textContent = targetEntry.word;
+      document.getElementById("result-definition").textContent = targetEntry.def;
+
+      const modal = document.getElementById("result-modal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeResultModal() {
+      const modal = document.getElementById("result-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function openHelpModal() {
+      const modal = document.getElementById("help-modal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeHelpModal() {
+      const modal = document.getElementById("help-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function saveStats() {
+      localStorage.setItem("fordon_wordle_wins", String(stats.wins));
+      localStorage.setItem("fordon_wordle_streak", String(stats.streak));
+    }
+
+    function updateStatsUI() {
+      document.getElementById("stat-wins").textContent = stats.wins;
+      document.getElementById("stat-streak").textContent = stats.streak;
+    }
+  </script>
+</body>
+</html>
